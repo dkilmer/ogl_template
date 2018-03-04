@@ -33,7 +33,8 @@ GLint load_texture_to_uniform(const char *filename, const char *unif_name, GLuin
 void free_render_def(render_def *rd);
 void setup_render_def(render_def *rd, GLenum draw_type, const char *vertex_shader, const char *fragment_shader, GLfloat *vp_mat, const char *tex_file);
 void render_advance(render_def *rd);
-void render_tri(render_def *rd, tri *tri, clr *clr);
+void render_pt(render_def *rd, pt *p, clr *c, pt *nrm, uv_pt *uv);
+void render_tri(render_def *rd, tri *tri, clr *c);
 void render_buffer(render_def *rd);
 
 #endif //RENDER_UTIL_H

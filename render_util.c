@@ -240,14 +240,39 @@ GLint fto10(float f) {
 	return (GLint)(f * 511) & 0b1111111111;
 }
 
-void render_tri(render_def *rd, tri *tri, clr *clr) {
+void render_pt(render_def *rd, pt *p, clr *c, pt *nrm, uv_pt *uv) {
+	if (init_render(rd) < 0) return;
+	GLuint n = (nrm) ? (GLuint)(fto10(nrm->z) << 20) | (fto10(nrm->y) << 10) | fto10(nrm->x) : 0;
+	GLubyte r = (c) ? (GLubyte)(c->r * 255) : (GLubyte)0;
+	GLubyte g = (c) ? (GLubyte)(c->g * 255) : (GLubyte)0;
+	GLubyte b = (c) ? (GLubyte)(c->b * 255) : (GLubyte)0;
+	GLubyte a = (c) ? (GLubyte)(c->a * 255) : (GLubyte)255;
+	GLushort u = (uv) ? (GLushort)(uv->u * 65535) : (GLushort)0;
+	GLushort v = (uv) ? (GLushort)(uv->v * 65535) : (GLushort)0;
+
+	int idx = rd->item_idx;
+	rd->verts[idx].x = p->x;
+	rd->verts[idx].y = p->y;
+	rd->verts[idx].z = p->z;
+	rd->verts[idx].r = r;
+	rd->verts[idx].g = g;
+	rd->verts[idx].b = b;
+	rd->verts[idx].a = a;
+	rd->verts[idx].n = n;
+	rd->verts[idx].u = u;
+	rd->verts[idx].v = v;
+
+	rd->item_idx++;
+}
+
+void render_tri(render_def *rd, tri *tri, clr *c) {
 	if (init_render(rd) < 0) return;
 	pt nrm = v3_norm(v3_cross(v3_sub(tri->p[0], tri->p[1]), v3_sub(tri->p[2], tri->p[1])));
 	GLuint n = (GLuint)(fto10(nrm.z) << 20) | (fto10(nrm.y) << 10) | fto10(nrm.x);
-	GLubyte r = (GLubyte)(clr->r * 255);
-	GLubyte g = (GLubyte)(clr->g * 255);
-	GLubyte b = (GLubyte)(clr->b * 255);
-	GLubyte a = (GLubyte)(clr->a * 255);
+	GLubyte r = (GLubyte)(c->r * 255);
+	GLubyte g = (GLubyte)(c->g * 255);
+	GLubyte b = (GLubyte)(c->b * 255);
+	GLubyte a = (GLubyte)(c->a * 255);
 
 	int idx = rd->item_idx;
 	rd->verts[idx].x = tri->p[0].x;
@@ -283,7 +308,7 @@ void render_tri(render_def *rd, tri *tri, clr *clr) {
 	rd->verts[idx].u = (GLushort)(tri->uv[2].u * 65535);
 	rd->verts[idx].v = (GLushort)(tri->uv[2].v * 65535);
 
-	rd->item_idx+=3;
+	rd->item_idx += 3;
 }
 
 void render_buffer(render_def *rd) {

@@ -1,6 +1,6 @@
 ## ogl_template
 
-Template for OpenGL projects that render triangles. Uses a buffer of position, color, normal and UV, which is squished to 24 bytes per vertex by using various normalized ints.
+Template for OpenGL projects that render triangles. Uses a buffer of position, color, normal and UV, which is squished to 24 bytes per vertex by using various normalized ints. Also uses mapped buffers with fences, which makes it faster to stream a bunch of geometry every frame.
 
 To compile this, you will need a `deps` folder. I'm doing something a little unusual here, so that I can quickly create prototype projects. My deps folder has the subdirectories `chipmunk`, `glad`, `portaudio`, `sdl2` and `stb`. Under `stb` I dumped the whole [stb repo](https://github.com/nothings/stb). Under `glad` I dumped the `c` branch of the [glad repo](https://github.com/Dav1dde/glad/tree/c). The `chipmunk`, `sdl2` and `portaudio` projects are structured with `include` and `lib` folders. Under the `lib` folders are subdirectories `macos`, `linux` and `win32` which should contain the static libs to link for their respective platforms.
 

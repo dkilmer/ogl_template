@@ -17,3 +17,8 @@ cmake ..
 make
 ```
 
+Several really great lightweight C libs are included here:
+* [inih by Ben Hoyt](https://github.com/benhoyt/inih)
+* [Math 3D by Stephan Soller](https://github.com/arkanis/single-header-file-c-libs)
+* [ut hash by Troy D. Hanson](https://github.com/troydhanson/uthash)
+

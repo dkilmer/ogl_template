@@ -22,3 +22,4 @@ Several really great lightweight C libs are included here:
 * [Math 3D by Stephan Soller](https://github.com/arkanis/single-header-file-c-libs)
 * [ut hash by Troy D. Hanson](https://github.com/troydhanson/uthash)
 
+The quaternion code is ported from Anton Gerdelan, who wrote [an excellent practical beginner's guide](https://capnramses.itch.io/antons-opengl-4-tutorials) to OpenGL programming.

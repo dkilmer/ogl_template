@@ -124,30 +124,25 @@ GLint load_texture_to_uniform(const char *filename, const char *unif_name, GLuin
 	return texUnif;
 }
 
-/*
-void alloc_buffers(render_def *rd) {
-	rd->tris = (vbo_tri *)malloc(sizeof(vbo_tri) * rd->num_items * rd->num_bufs);
-}
-*/
-
 void free_render_def(render_def *rd) {
 	glDeleteBuffers(1, &rd->vbo);
 	glDeleteVertexArrays(1, &rd->vao);
 	if (rd->fences) free(rd->fences);
 	glDeleteProgram(rd->shader);
 	if (rd->num_bufs == 1) {
-		free(rd->tris);
+		free(rd->verts);
 	}
 }
 
-void setup_render_def(render_def *rd, const char *vertex_shader, const char *fragment_shader, GLfloat *vp_mat, const char *tex_file) {
+void setup_render_def(render_def *rd, GLenum draw_type, const char *vertex_shader, const char *fragment_shader, GLfloat *vp_mat, const char *tex_file) {
 	GLenum err;
 	rd->buf_idx = 0;
 	rd->item_idx = 0;
+	rd->draw_type = draw_type;
 	if (rd->num_bufs > 1) {
 		rd->fences = (GLsync *)malloc(rd->num_bufs * sizeof(GLsync));
 		for (int i=0; i<rd->num_bufs; i++) rd->fences[i] = NULL;
-		rd->tris = NULL;
+		rd->verts = NULL;
 	}
 	rd->shader = create_shader_program(vertex_shader, fragment_shader);
 	glUseProgram(rd->shader);
@@ -164,7 +159,7 @@ void setup_render_def(render_def *rd, const char *vertex_shader, const char *fra
 
 	// buffer for vertices
 	glBindBuffer(GL_ARRAY_BUFFER, rd->vbo);
-	glBufferData(GL_ARRAY_BUFFER, rd->num_items * rd->num_bufs * sizeof(vbo_tri), NULL, GL_STREAM_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, rd->num_items * rd->num_bufs * sizeof(vbo_pt), NULL, GL_STREAM_DRAW);
 	err = glGetError();
 	if (err != GL_NO_ERROR) {
 		printf("tri buffer data: %d\n", err);
@@ -218,10 +213,10 @@ int init_render(render_def *rd) {
 			rd->fences[rd->buf_idx] = NULL;
 		}
 		glBindBuffer(GL_ARRAY_BUFFER, rd->vbo);
-		int buf_len = rd->num_items * sizeof(vbo_tri);
+		int buf_len = rd->num_items * sizeof(vbo_pt);
 		int map_start = rd->buf_idx * buf_len;
-		rd->tris = (vbo_tri *)glMapBufferRange(GL_ARRAY_BUFFER, map_start, buf_len, GL_MAP_WRITE_BIT|GL_MAP_UNSYNCHRONIZED_BIT);
-		if (rd->tris == NULL) printf("failed to map tri buffer for buf_idx %d\n", rd->buf_idx);
+		rd->verts = (vbo_pt *)glMapBufferRange(GL_ARRAY_BUFFER, map_start, buf_len, GL_MAP_WRITE_BIT|GL_MAP_UNSYNCHRONIZED_BIT);
+		if (rd->verts == NULL) printf("failed to map tri buffer for buf_idx %d\n", rd->buf_idx);
 	}
 	if (rd->item_idx >= rd->num_items) {
 		printf("can't render to buf_idx %d: overflow\n", rd->buf_idx);
@@ -255,42 +250,40 @@ void render_tri(render_def *rd, tri *tri, clr *clr) {
 	GLubyte a = (GLubyte)(clr->a * 255);
 
 	int idx = rd->item_idx;
-	rd->tris[idx].p[0].x = tri->p[0].x;
-	rd->tris[idx].p[0].y = tri->p[0].y;
-	rd->tris[idx].p[0].z = tri->p[0].z;
-	rd->tris[idx].p[0].r = r;
-	rd->tris[idx].p[0].g = g;
-	rd->tris[idx].p[0].b = b;
-	rd->tris[idx].p[0].a = a;
-	rd->tris[idx].p[0].n = n;
-	rd->tris[idx].p[0].u = (GLushort)(tri->uv[0].u * 65535);
-	rd->tris[idx].p[0].v = (GLushort)(tri->uv[0].v * 65535);
+	rd->verts[idx].x = tri->p[0].x;
+	rd->verts[idx].y = tri->p[0].y;
+	rd->verts[idx].z = tri->p[0].z;
+	rd->verts[idx].r = r;
+	rd->verts[idx].g = g;
+	rd->verts[idx].b = b;
+	rd->verts[idx].a = a;
+	rd->verts[idx].n = n;
+	rd->verts[idx].u = (GLushort)(tri->uv[0].u * 65535);
+	rd->verts[idx].v = (GLushort)(tri->uv[0].v * 65535);
+	idx++;
+	rd->verts[idx].x = tri->p[1].x;
+	rd->verts[idx].y = tri->p[1].y;
+	rd->verts[idx].z = tri->p[1].z;
+	rd->verts[idx].r = r;
+	rd->verts[idx].g = g;
+	rd->verts[idx].b = b;
+	rd->verts[idx].a = a;
+	rd->verts[idx].n = n;
+	rd->verts[idx].u = (GLushort)(tri->uv[1].u * 65535);
+	rd->verts[idx].v = (GLushort)(tri->uv[1].v * 65535);
+	idx++;
+	rd->verts[idx].x = tri->p[2].x;
+	rd->verts[idx].y = tri->p[2].y;
+	rd->verts[idx].z = tri->p[2].z;
+	rd->verts[idx].r = r;
+	rd->verts[idx].g = g;
+	rd->verts[idx].b = b;
+	rd->verts[idx].a = a;
+	rd->verts[idx].n = n;
+	rd->verts[idx].u = (GLushort)(tri->uv[2].u * 65535);
+	rd->verts[idx].v = (GLushort)(tri->uv[2].v * 65535);
 
-	rd->tris[idx].p[1].x = tri->p[1].x;
-	rd->tris[idx].p[1].y = tri->p[1].y;
-	rd->tris[idx].p[1].z = tri->p[1].z;
-	rd->tris[idx].p[1].r = r;
-	rd->tris[idx].p[1].g = g;
-	rd->tris[idx].p[1].b = b;
-	rd->tris[idx].p[1].a = a;
-	rd->tris[idx].p[1].n = n;
-	rd->tris[idx].p[1].u = (GLushort)(tri->uv[1].u * 65535);
-	rd->tris[idx].p[1].v = (GLushort)(tri->uv[1].v * 65535);
-
-	rd->tris[idx].p[2].x = tri->p[2].x;
-	rd->tris[idx].p[2].y = tri->p[2].y;
-	rd->tris[idx].p[2].z = tri->p[2].z;
-	rd->tris[idx].p[2].r = r;
-	rd->tris[idx].p[2].g = g;
-	rd->tris[idx].p[2].b = b;
-	rd->tris[idx].p[2].a = a;
-	rd->tris[idx].p[2].n = n;
-	rd->tris[idx].p[2].u = 0;
-	rd->tris[idx].p[2].v = 0;
-	rd->tris[idx].p[2].u = (GLushort)(tri->uv[2].u * 65535);
-	rd->tris[idx].p[2].v = (GLushort)(tri->uv[2].v * 65535);
-
-	rd->item_idx++;
+	rd->item_idx+=3;
 }
 
 void render_buffer(render_def *rd) {
@@ -303,6 +296,6 @@ void render_buffer(render_def *rd) {
 	//glBindTexture(GL_TEXTURE_2D, rd->tex);
 	if (rd->item_idx > 0) {
 		//printf("drawing %d items of %d from buffer %d\n", rd->item_idx, rd->num_items, rd->buf_idx);
-		glDrawArrays(GL_TRIANGLES, rd->buf_idx * rd->num_items * rd->verts_per_item, rd->item_idx * rd->verts_per_item);
+		glDrawArrays(rd->draw_type, rd->buf_idx * rd->num_items, rd->item_idx);
 	}
 }

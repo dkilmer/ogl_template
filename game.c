@@ -53,7 +53,7 @@ void run() {
 	render_def buf;
 	buf.num_bufs = 3;
 	buf.num_items = (GLuint)(3000);
-	buf.verts_per_item = 3;
+	//buf.verts_per_item = 3;
 	//alloc_buffers(&buf);
 
 	char vsname[1024];
@@ -63,6 +63,7 @@ void run() {
 	sprintf(fsname, "%s/../shaders/frag.glsl", pwd);
 	sprintf(texname, "%s/../res/pencil-512.png", pwd);
 	setup_render_def(&buf,
+		 GL_TRIANGLES,
 	   vsname,
 	   fsname,
 	   (GLfloat *)&vp_mat,

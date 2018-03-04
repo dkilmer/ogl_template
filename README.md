@@ -21,5 +21,6 @@ Several really great lightweight C libs are included here:
 * [inih by Ben Hoyt](https://github.com/benhoyt/inih)
 * [Math 3D by Stephan Soller](https://github.com/arkanis/single-header-file-c-libs)
 * [ut hash by Troy D. Hanson](https://github.com/troydhanson/uthash)
+* [AHEasing by Warren Moore](https://github.com/warrenm/AHEasing)
 
 The quaternion code is ported from Anton Gerdelan, who wrote [an excellent practical beginner's guide](https://capnramses.itch.io/antons-opengl-4-tutorials) to OpenGL programming.
